@@ -25,15 +25,33 @@ class LocationService {
     }
 
     try {
+      // Fast path: return a recent cached fix immediately if available, so
+      // the UI isn't stuck spinning while a fresh GPS fix is acquired.
+      final last = await Geolocator.getLastKnownPosition();
+      if (last != null) {
+        // Kick off a fresh fetch in the background for next time, but don't await it.
+        Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.medium,
+          timeLimit: const Duration(seconds: 10),
+        ).catchError((_) => last);
+        return Result.success(last);
+      }
+
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.medium,
         timeLimit: const Duration(seconds: 10),
       );
       return Result.success(position);
     } catch (_) {
-      return const Result.failure(UnknownFailure('Could not get current location.'));
+      return const Result.failure(
+        UnknownFailure('Could not get current location.'),
+      );
     }
   }
+
+  Future<void> openAppSettings() => Geolocator.openAppSettings();
 }
 
-final locationServiceProvider = Provider<LocationService>((ref) => LocationService());
+final locationServiceProvider = Provider<LocationService>(
+  (ref) => LocationService(),
+);

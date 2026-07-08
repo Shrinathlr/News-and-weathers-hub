@@ -26,7 +26,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 300) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 300) {
       ref.read(newsProvider.notifier).loadNextPage();
     }
   }
@@ -62,7 +63,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
               child: CitySearchBar(
                 tag: 'dashboard',
-                onCitySelected: (city) => ref.read(weatherProvider.notifier).loadByCoordinates(
+                onCitySelected: (city) => ref
+                    .read(weatherProvider.notifier)
+                    .loadByCoordinates(
                       latitude: city.latitude,
                       longitude: city.longitude,
                       cityName: city.displayName,
@@ -77,17 +80,32 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             const SizedBox(height: 24),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text('Latest News', style: Theme.of(context).textTheme.titleLarge),
+              child: Text(
+                'Latest News',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
             ),
             const SizedBox(height: 8),
-            if (newsState.isFromCache) OfflineBanner(cachedAt: newsState.cachedAt),
+            if (newsState.isFromCache)
+              OfflineBanner(cachedAt: newsState.cachedAt),
             _buildNewsSection(newsState),
           ],
         ),
       ),
       floatingActionButton: IconButton.filled(
-        onPressed: () => ref.read(weatherProvider.notifier).loadByCurrentLocation(),
-        icon: const Icon(Icons.my_location_rounded),
+        onPressed: weatherState.isLoading
+            ? null
+            : () => ref.read(weatherProvider.notifier).loadByCurrentLocation(),
+        icon: weatherState.isLoading
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : const Icon(Icons.my_location_rounded),
       ),
     );
   }
@@ -102,7 +120,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     if (state.failure != null && state.data == null) {
       return ErrorRetryView(
         failure: state.failure!,
-        onRetry: () => ref.read(weatherProvider.notifier).loadByCurrentLocation(),
+        onRetry: () =>
+            ref.read(weatherProvider.notifier).loadByCurrentLocation(),
       );
     }
     if (state.data == null) return const SizedBox.shrink();
@@ -137,7 +156,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       );
     }
     if (state.articles.isEmpty) {
-      return const EmptyStateView(icon: Icons.newspaper_outlined, message: 'No news available right now.');
+      return const EmptyStateView(
+        icon: Icons.newspaper_outlined,
+        message: 'No news available right now.',
+      );
     }
 
     return Column(
@@ -146,7 +168,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           (article) => NewsListItem(
             article: article,
             onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => NewsDetailsScreen(article: article)),
+              MaterialPageRoute(
+                builder: (_) => NewsDetailsScreen(article: article),
+              ),
             ),
           ),
         ),
@@ -160,7 +184,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             padding: const EdgeInsets.all(16),
             child: Text(
               'Could not load more: ${state.failure!.message}',
-              style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.error,
+                fontSize: 12,
+              ),
             ),
           ),
       ],

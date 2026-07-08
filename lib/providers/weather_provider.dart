@@ -58,6 +58,8 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
   }
 
   Future<void> loadByCurrentLocation() async {
+    if (state.isLoading)
+      return; // guard: ignore repeated taps while a fetch is in-flight
     state = state.copyWith(isLoading: true, clearFailure: true);
     final posResult = await _ref
         .read(locationServiceProvider)
